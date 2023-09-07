@@ -153,13 +153,21 @@ kind create cluster --name kind-2
 
 ---
 
-## Exploración del cluster
+## Exploración del cluster (I)
 
 Mediante un listado de contenedores podemos observar que el servidor de kubernetes se ha desplegado dentro de un contenedor de docker:
 
    ```bash
    docker ps
    ```
+
+kubectl es la interfaz de línea de comandos de Kubernetes.
+
+Utiliza la API de Kubernetes para interactuar con el clúster.
+
+---
+
+## Exploración del cluster (II)
 
 1. Verifica que el cluster está en funcionamiento:
 
@@ -228,6 +236,85 @@ En un cluster de kind, los nodos pueden tener diferentes roles:
 2. **Worker**: Estos nodos ejecutan las cargas de trabajo de las aplicaciones. Son responsables de alojar y ejecutar los contenedores que componen las aplicaciones.
 
 Esta separación de responsabilidades permite una administración más eficiente del cluster de Kubernetes.
+
+---
+
+## Despliegue (I)
+
+Una vez tenemos un cluster de Kubernetes en funcionamiento, podemos desplegar aplicaciones en él.
+
+![width:480 center](img/kubernetes_nodes_01.png)
+
+[https://kubernetes.io/docs/](https://kubernetes.io/docs/)
+
+---
+
+## Despliegue (II)
+
+Crear un Despliegue (Deployment) en Kubernetes permite programar la ejecución de aplicaciones contenerizadas en el clúster.
+
+Vamos a implementar nuestra primera aplicación en Kubernetes con el comando:
+```bash
+kubectl create deployment
+```
+Necesitamos proporcionar el nombre del despliegue y la ubicación de la imagen de la aplicación. Ejemplo:
+
+```bash
+kubectl create deployment web-nginx --image=nginx:alpine
+```
+---
+
+## Despliegue (III)
+
+¿Qué ha hecho el comando anterior?:
+
+1. Buscar un nodo donde ejecutar una instancia de la aplicación (actualmente sólo tenemos 1 nodo disponible)
+2. Programar la ejecución de la aplicación en ese nodo
+3. Configurar el cluster para reprogramar la instancia en un nuevo nodo cuando fuera necesario
+
+Verificar despliegue:
+
+   ```bash
+   kubectl get deployments
+   ```
+
+---
+
+## Visualización de la aplicación (I)
+
+Los Pods que se ejecutan dentro de Kubernetes funcionan en una red privada y aislada.
+
+Por defecto, son visibles desde otros Pods y servicios dentro del mismo cluster de Kubernetes, pero no fuera de esa red.
+
+Cuando usamos kubectl, estamos interactuando a través de un acceso de la API para comunicarnos con nuestra aplicación.
+
+Para acceder a la aplicación, necesitamos exponerla fuera de la red privada del cluster:
+
+   ```bash
+   kubectl proxy
+   ```
+
+El proxy reenviará las comunicaciones a la red privada del cluster. Debe abrirse en otra terminal y puede detenerse presionando control-C.
+
+---
+
+## Visualización de la aplicación (II)
+
+El servidor de API crea un punto de acceso para cada pod basado en su nombre, accesible mediante el proxy.
+
+Obtener el nombre del Pod que ejecuta la aplicación:
+
+   ```bash
+   kubectl get pods
+   ```
+
+![width:320 center](img/pods_01.png)
+
+Puedes acceder al Pod a través de la API proxy accediendo a la siguiente URL:
+
+[http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>]http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>
+
+[http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>/proxy/]http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod/proxy/>
 
 ---
 
