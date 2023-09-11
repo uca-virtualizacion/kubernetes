@@ -1,6 +1,6 @@
 ---
 marp: true
-title: Prácticas de Kubernetes
+title: Prácticas de Kubernetes 01
 description: Asignatura de Virtualización de Sistemas
 ---
 
@@ -28,7 +28,7 @@ img[alt~="center"] {
 }
 </style>
 
-# KUBERNETES
+# KUBERNETES - Parte 1
 
 ![width:480 center](img/Kubernetes_logo.svg)
 
