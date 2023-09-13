@@ -71,7 +71,20 @@ kind (Kubernetes in Docker) es una herramienta que nos permite crear clusters de
 
 [Guía de instalación](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
-Hay varias formas de instalar kind en cada Sistema Operativo, a continuación mostraremos un ejemplo en MacOs y Windows.
+Hay varias formas de instalar kind en cada Sistema Operativo, a continuación mostraremos un ejemplo en Linux, MacOs y Windows.
+
+---
+
+### Instalación de kind (Linux)
+
+```bash
+# For AMD64 / x86_64
+[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+# For ARM64
+[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-arm64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+```
 
 ---
 
@@ -351,7 +364,7 @@ Si quieremos asignar un NodePort específico, tendremos que hacerlo mediante un 
 apiVersion: v1
 kind: Service
 metadata:
-  name: web-nginx
+  name: service-nginx
 spec:
   type: NodePort
   ports:
@@ -478,8 +491,8 @@ Prueba a acceder a la aplicación mediante los puertos indicados anteriormente: 
 
 1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 80 de tu máquina local.
 
-2. Crea un despliegue en el cluster para ejecutar la aplicación de WordPress.
+2. Crea un despliegue en el cluster para ejecutar la aplicación de Apache.
 
-3. Configura un servicio para el deployment de WordPress de manera que puedas acceder a la aplicación desde tu navegador a través del puerto 80.
+3. Configura un servicio para el deployment de Apache de manera que puedas acceder a la aplicación desde tu navegador a través del puerto 80.
 
-4. Realiza pruebas para asegurarte de que se abre la página de configuración de WordPress.
+4. Realiza pruebas para asegurarte de que se abre la página de Apache.
