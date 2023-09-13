@@ -116,6 +116,7 @@ dist
 # TernJS port file
 .tern-port
 
+.config
 
 # PDF created with Marp:
 kubernetes-01.pdf
