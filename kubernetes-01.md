@@ -93,7 +93,8 @@ sudo mv ./kind /usr/local/bin/kind
 1. Instala Homebrew (si aún no lo has hecho):
 
    ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   /bin/bash -c "$(curl -fsSL \
+      https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
    ```
 
 2. Instala kind:
