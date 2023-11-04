@@ -26,6 +26,7 @@ img[alt~="center"] {
   display: block;
   margin: 0 auto;
 }
+
 </style>
 
 # KUBERNETES - Parte 1
@@ -36,26 +37,27 @@ img[alt~="center"] {
 
 <!-- paginate: true -->
 
-## ¿Qué es Kubernetes?
+## ¿Qué es Kubernetes? (k8s)
 
-### Algunas definiciones:
+**Kubernetes** plataforma de código abierto para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores.
 
-1. **k8s**
-2. **Pod**
+**Nodo**: máquina física o virtual en la que se ejecutan los componentes del clúster.
+
+**Control-plane**: conjunto de componentes encargado de gestionar el clúster.
+
+**Kubelet**: agente que se ejecuta en cada nodo para asegurar que los contenedores se ejecuten en un Pod.
+
+**Kube-proxy**: proxy que se ejecuta en cada nodo para mantener las reglas de red.
+
+**Pod**: colección de contenedores que contienen una aplicación y sus dependencias:
+   - Los contenedores en un Pod se ejecutan en el mismo nodo
+   - Los Pods son la unidad básica de ejecución en Kubernetes
 
 ---
 
-### 1. k8s
+## Arquitectura de Kubernetes: https://kubernetes.io/docs/concepts/architecture/ 
 
-Kubernetes es una plataforma de código abierto, conocida como k8s, para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores.
-
-### 2. Pod
-
-Un pod es la unidad más pequeña y básica en Kubernetes.
-
-Representa un único proceso o conjunto de procesos que comparten el mismo espacio de red y almacenamiento.
-
-Los pods son a menudo utilizados para agrupar contenedores relacionados y se ejecutan en el mismo nodo.
+![width:800 center](img/kubernetes-cluster-architecture.svg)
 
 ---
 
@@ -162,7 +164,7 @@ Mediante un listado de contenedores podemos observar que el servidor de kubernet
    docker ps
    ```
 
-kubectl es la interfaz de línea de comandos de Kubernetes.
+**kubectl** es la interfaz de línea de comandos de Kubernetes.
 
 Utiliza la API de Kubernetes para interactuar con el clúster.
 
@@ -230,24 +232,27 @@ Comprobamos que ya no existen los contenedores:
 
 ## Despliegue (I)
 
-Una vez tenemos un cluster de Kubernetes en funcionamiento, podemos desplegar aplicaciones en él [https://kubernetes.io/docs/](https://kubernetes.io/docs/)
+Una vez tenemos un cluster de Kubernetes en funcionamiento, podemos desplegar aplicaciones contenerizadas en él [https://kubernetes.io/docs/](https://kubernetes.io/docs/)
 
 ![width:600 center](img/kubernetes_nodes_01.png)
+
+Cada Pod ejecuta una instancia de la aplicación. Los Pods son la unidad básica de ejecución en Kubernetes.
 
 ---
 
 ## Despliegue (II)
 
-Crear un Despliegue (Deployment) en Kubernetes permite programar la ejecución de aplicaciones contenerizadas en el clúster.
+Un Despliegue (Deployment) permite programar la ejecución de aplicaciones contenerizadas en el cluster:
+- Indica qué aplicación se va a ejecutar y cómo hacerlo
+- Crea nuevos Pods si no hay suficientes
+- Elimina Pods si hay demasiados
+- Mantiene los Pods actualizados con la última versión de la aplicación
 
 ```bash
-kubectl create deployment
-```
-Necesitamos proporcionar el nombre del despliegue y la imagen de la aplicación.
-
-```bash
+kubectl create deployment <nombre-del-despliegue> --image=<imagen-de-la-aplicación>
 kubectl create deployment web-nginx --image=nginx:alpine
 ```
+
 ---
 
 ## Despliegue (III)
@@ -268,17 +273,15 @@ Verificar despliegue:
 
 ## Visualización de la aplicación (I)
 
-Los Pods que se ejecutan dentro de Kubernetes funcionan en una red privada y aislada.
+Los Pods funcionan en una red privada y aislada.
 
-Por defecto, son visibles desde otros Pods y servicios dentro del mismo cluster de Kubernetes, pero no fuera de esa red.
-
-Cuando usamos kubectl, estamos interactuando a través de un acceso de la API para comunicarnos con nuestra aplicación.
+Por defecto, son visibles desde otros Pods y servicios dentro del mismo cluster, pero no fuera de esa red.
 
 Para acceder a la aplicación, necesitamos exponerla fuera de la red privada del cluster:
 
-   ```bash
-   kubectl proxy
-   ```
+```bash
+kubectl proxy
+```
 
 El proxy reenviará las comunicaciones a la red privada del cluster. Debe abrirse en otra terminal y puede detenerse presionando control-C.
 
@@ -286,15 +289,11 @@ El proxy reenviará las comunicaciones a la red privada del cluster. Debe abrirs
 
 ## Visualización de la aplicación (II)
 
-El servidor de API crea un punto de acceso para cada pod basado en su nombre, accesible mediante el proxy.
+Para acceder a un Pod a través del proxy, necesitamos conocer su nombre:
 
-Obtener el nombre del Pod que ejecuta la aplicación:
-
-   ```bash
-   kubectl get pods
-   ```
-
-Puedes acceder al Pod a través de la API proxy accediendo a la siguiente URL:
+```bash
+kubectl get pods
+```
 
 [http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>)
 
@@ -307,14 +306,14 @@ Puedes acceder al Pod a través de la API proxy accediendo a la siguiente URL:
 También podemos acceder a la aplicación redirigiendo un puerto en la máquina local a un puerto del Pod:
 
 ```bash
-   kubectl port-forward <nombre-del-pod> 8080:80
-   ```
+kubectl port-forward <nombre-del-pod> 8080:80
+```
 
 ---
 
 ## Servicios (Services) (I)
 
-Un servicio en Kubernetes es una abstracción que define una política de acceso a un conjunto de pods.
+**Servicio**: abstracción que define una política de acceso a un conjunto de pods.
 
 Proporciona una forma constante de acceder a una aplicación, independientemente de los cambios en la ubicación o el escalado de los pods.
 
@@ -326,9 +325,9 @@ Los servicios pueden ser expuestos internamente en el cluster o de manera extern
 
 Listar servicios actuales:
 
-   ```bash
-   kubectl get services
-   ```
+```bash
+kubectl get services
+```
 
 Por defecto se crea un servicio llamado kubernetes que permite acceder a la API del cluster.
 
@@ -336,28 +335,28 @@ Por defecto se crea un servicio llamado kubernetes que permite acceder a la API 
 
 ## Servicios (Services) (III)
 
-Para crear un nuevo servicio y exponerlo al tráfico externo, utilizaremos el comando "expose" con "NodePort" como parámetro.
+Para crear un nuevo servicio y exponerlo al tráfico externo, utilizaremos el comando `expose` con `NodePort` como parámetro.
 
 ```bash
-   kubectl expose deployment web-nginx --type=NodePort --port=80
+kubectl expose deployment web-nginx --type=NodePort --port=80
 ```
 
-Podemos ver el puerto asignado al servicio en el campo NodePort mediante el comando:
+Podemos ver el puerto asignado al servicio en el campo `NodePort` mediante el comando:
 ```bash
-   kubectl describe services/web-nginx
+kubectl describe services/web-nginx
 ```
 
 ```bash
-   kubectl get services
+kubectl get services
 ```
 
 ---
 
 ## Servicios (Services) (IV)
 
-Por defecto, Kubernetes asigna un puerto aleatorio entre 30000 y 32767 para cada servicio.
+Kubernetes asigna un puerto aleatorio entre 30000 y 32767 para cada servicio.
 
-Si quieremos asignar un NodePort específico, tendremos que hacerlo mediante un archivo de configuración:
+Si queremos asignar un NodePort específico, tendremos que hacerlo mediante un archivo de configuración `yaml`:
 
 ```yaml
 apiVersion: v1
@@ -365,18 +364,32 @@ kind: Service
 metadata:
   name: service-nginx
 spec:
+  selector:
+    app: web-nginx
   type: NodePort
   ports:
     - name: http
       port: 80
       nodePort: 30080
-  selector:
-    app: web-nginx
 ```
 
 ---
 
 ## Servicios (Services) (V)
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-nginx
+```
+* apiVersion: versión de la API de Kubernetes a utilizar
+* kind: tipo de archivo de configuración (Service)
+* metadata: metadatos del recurso (nombre del servicio)
+
+---
+
+## Servicios (Services) (VI)
 
 ```yaml
 spec:
@@ -389,7 +402,7 @@ spec:
 
 ---
 
-## Servicios (Services) (VI)
+## Servicios (Services) (VII)
 
 ```yaml
 spec:
@@ -401,6 +414,16 @@ spec:
 ```
 
 En este caso, el Servicio (Service) escucha las solicitudes en el puerto 80 y las reenvía al puerto 30080 de los Pods de destino.
+
+---
+
+### Tipos de servicios
+
+Aunque en este caso hemos utilizado un servicio de tipo NodePort, existen varios tipos de servicios:
+
+* **ClusterIP**: expone el servicio en una dirección IP interna del clúster. Este tipo de servicio sólo es accesible desde dentro del clúster.
+* **NodePort**: expone el servicio en cada nodo del clúster en una dirección IP estática. Un puerto (el puerto NodePort) en cada nodo reenvía al mismo puerto en el servicio.
+* **LoadBalancer**: expone el servicio externamente mediante un balanceador de carga externo en la nube.
 
 ---
 
@@ -476,10 +499,7 @@ Repetimos los pasos anteriores para desplegar la aplicación y crear el servicio
 
 ```bash
 kubectl create deployment web-nginx --image=nginx:alpine
-```
-
-```bash
-kubectl apply -f [ruta-al-archivo]/[nombre-archivo].yaml
+kubectl apply -f [ruta-al-servicio]/[nombre-archivo-servicio].yaml
 ```
 
 Prueba a acceder a la aplicación mediante los puertos indicados anteriormente: [127.0.0.1:8080](127.0.0.1:8080)
@@ -495,3 +515,5 @@ Prueba a acceder a la aplicación mediante los puertos indicados anteriormente: 
 3. Configura un servicio para el deployment de Apache de manera que puedas acceder a la aplicación desde tu navegador a través del puerto 80.
 
 4. Realiza pruebas para asegurarte de que se abre la página de Apache.
+
+5. Investiga cómo crear un despliegue mediante un archivo de configuración yaml e intenta crear el despliegue de Apache de esta manera.
