@@ -83,7 +83,11 @@ Hay varias formas de instalar kind en cada Sistema Operativo, a continuación mo
 # For AMD64 / x86_64
 [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
 # For ARM64
-[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-arm64
+[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/
+```
+
+```bash
+kind-linux-arm64
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 ```
@@ -164,7 +168,8 @@ Mediante un listado de contenedores podemos observar que el servidor de kubernet
    docker ps
    ```
 
-**kubectl** es la interfaz de línea de comandos de Kubernetes.
+**kubectl** es la interfaz de línea de comandos de Kubernetes:
+   - https://kubernetes.io/docs/tasks/tools/
 
 Utiliza la API de Kubernetes para interactuar con el clúster.
 
@@ -179,7 +184,7 @@ Utiliza la API de Kubernetes para interactuar con el clúster.
    ```
 
    ```bash
-   kubectl cluster-info kind-kind2
+   kubectl cluster-info kind-kind-2
    ```
 
 2. Lista los nodos del cluster:
@@ -219,7 +224,7 @@ En caso de tener varios clusteres:
    ```
 
    ```bash
-   kind delete cluster --name=kind2
+   kind delete cluster --name=kind-2
    ```
 
 Comprobamos que ya no existen los contenedores:
@@ -294,9 +299,10 @@ Para acceder a un Pod a través del proxy, necesitamos conocer su nombre:
 ```bash
 kubectl get pods
 ```
-
+Información del pod:
 [http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>)
 
+URL para acceder al pod:
 [http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>/proxy/](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod/proxy/>)
 
 ---
@@ -306,7 +312,7 @@ kubectl get pods
 También podemos acceder a la aplicación redirigiendo un puerto en la máquina local a un puerto del Pod:
 
 ```bash
-kubectl port-forward <nombre-del-pod> 8080:80
+kubectl port-forward <nombre-del-pod> <puerto-local>:<puerto-pod>
 ```
 
 ---
@@ -331,6 +337,12 @@ kubectl get services
 
 Por defecto se crea un servicio llamado kubernetes que permite acceder a la API del cluster.
 
+Si queremos ver en un mismo comando los servicios, los despliegues y los pods:
+
+```bash
+kubectl get pods,deployments,services
+```
+
 ---
 
 ## Servicios (Services) (III)
@@ -344,15 +356,16 @@ kubectl expose deployment web-nginx --type=NodePort --port=80
 Podemos ver el puerto asignado al servicio en el campo `NodePort` mediante el comando:
 ```bash
 kubectl describe services/web-nginx
+kubectl get services/web-nginx
 ```
 
-```bash
-kubectl get services
-```
+Sin embargo, aún no podremos acceder a la aplicación mediante el puerto indicado en el campo `NodePort`:
+   - El puerto no está expuesto fuera del cluster
+   - Como el puerto asignado es aleatorio, no sabemos qué puerto exponer
 
 ---
 
-## Servicios (Services) (IV)
+## Servicios como IaC (I)
 
 Kubernetes asigna un puerto aleatorio entre 30000 y 32767 para cada servicio.
 
@@ -375,7 +388,7 @@ spec:
 
 ---
 
-## Servicios (Services) (V)
+## Servicios como IaC (II)
 
 ```yaml
 apiVersion: v1
@@ -389,7 +402,7 @@ metadata:
 
 ---
 
-## Servicios (Services) (VI)
+## Servicios como IaC (III)
 
 ```yaml
 spec:
@@ -402,7 +415,7 @@ spec:
 
 ---
 
-## Servicios (Services) (VII)
+## Servicios como IaC (IV)
 
 ```yaml
 spec:
@@ -414,16 +427,6 @@ spec:
 ```
 
 En este caso, el Servicio (Service) escucha las solicitudes en el puerto 80 y las reenvía al puerto 30080 de los Pods de destino.
-
----
-
-### Tipos de servicios
-
-Aunque en este caso hemos utilizado un servicio de tipo NodePort, existen varios tipos de servicios:
-
-* **ClusterIP**: expone el servicio en una dirección IP interna del clúster. Este tipo de servicio sólo es accesible desde dentro del clúster.
-* **NodePort**: expone el servicio en cada nodo del clúster en una dirección IP estática. Un puerto (el puerto NodePort) en cada nodo reenvía al mismo puerto en el servicio.
-* **LoadBalancer**: expone el servicio externamente mediante un balanceador de carga externo en la nube.
 
 ---
 
@@ -502,7 +505,19 @@ kubectl create deployment web-nginx --image=nginx:alpine
 kubectl apply -f [ruta-al-servicio]/[nombre-archivo-servicio].yaml
 ```
 
-Prueba a acceder a la aplicación mediante los puertos indicados anteriormente: [127.0.0.1:8080](127.0.0.1:8080)
+Prueba a acceder a la aplicación mediante los puertos indicados anteriormente: http://localhost:8080
+
+---
+
+## Tipos de servicios
+
+Aunque en este caso hemos utilizado un servicio de tipo NodePort, existen varios tipos de servicios:
+
+* **ClusterIP**: expone el servicio en una dirección IP interna del clúster. Este tipo de servicio sólo es accesible desde dentro del clúster.
+* **NodePort**: expone el servicio en cada nodo del clúster en una dirección IP estática. Un puerto (el puerto NodePort) en cada nodo reenvía al mismo puerto en el servicio.
+* **LoadBalancer**: expone el servicio externamente mediante un balanceador de carga externo en la nube.
+
+Para utilizar un servicio de tipo LoadBalancer, necesitamos un proveedor de servicios en la nube que soporte este tipo de servicio, algo que por defecto no tenemos en nuestro cluster de kind.
 
 ---
 
