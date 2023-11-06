@@ -449,7 +449,7 @@ El mapeo de puertos de un cluster permite acceder a los servicios de un Pod desd
 Usando un archivo de configuración, podemos crear un cluster con un mapeo de puertos personalizado:
 
 ```yaml
-kind: cluster
+kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
