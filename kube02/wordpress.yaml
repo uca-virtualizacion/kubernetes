@@ -29,7 +29,7 @@ spec:
         - name: wordpress
           image: bitnami/wordpress:latest
           ports:
-            - containerPort: 30001
+            - containerPort: 8080
           env:
             - name: ALLOW_EMPTY_PASSWORD
               value: 'yes'
@@ -37,3 +37,5 @@ spec:
               value: 'bn_wordpress'
             - name: WORDPRESS_DATABASE_NAME
               value: 'bitnami_wordpress'
+            - name: WORDPRESS_DATABASE_HOST
+              value: 'service-mariadb'

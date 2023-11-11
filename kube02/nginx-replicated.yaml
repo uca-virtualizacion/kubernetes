@@ -16,6 +16,7 @@ kind: Deployment
 metadata:
   name: web-nginx
 spec:
+  replicas: 4
   selector:
     matchLabels:
       app: web-nginx

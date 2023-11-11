@@ -38,6 +38,12 @@ img[alt~="center"] {
 
 ## Recordatorio...
 
+![width:800 center](img/kubernetes-cluster-architecture.svg)
+
+---
+
+## Recordatorio...
+
 `kind create cluster` Crear cluster local
 
 `kubectl cluster-info` Información del cluster
@@ -74,7 +80,7 @@ Redirigiendo un puerto en la máquina local a un puerto del Pod:
 
 Un servicio proporciona una forma constante de acceder a una aplicación.
 
-Crear servicio para depsliegue de nginx
+Crear servicio para despliegue de nginx:
 `kubectl expose deployment web-nginx --type=NodePort --port=80`
 
 Podemos ver el puerto asignado al servicio en el campo NodePort mediante el comando:
@@ -146,9 +152,9 @@ kubectl apply -f [ruta-al-archivo]/[nombre-archivo].yaml
 
 ---
 
-## Despliegue de una aplicación
+## Despliegue de una aplicación con IaC
 
-Anteriormente hemos visto cómo crear clusters y servicios usando archivos de configuración.
+Anteriormente hemos visto cómo crear clusters y servicios usando archivos de configuración `yaml`.
 
 Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
 
@@ -157,8 +163,6 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
 * Uso compartido entre usuarios y equipos
 * Automatización de la creación de aplicaciones
 * Escalabilidad más flexible mediante lenguaje declarativo
-
-Vamos a desplegar una aplicación utilizando un archivo yaml que contendrá la información necesaria para que Kubernetes sepa qué queremos desplegar.
 
 ---
 
@@ -182,7 +186,7 @@ Vamos a desplegar una aplicación utilizando un archivo yaml que contendrá la i
          - name: web-nginx
            image: nginx:mainline-alpine
             ports:
-              - containerPort: 30080
+              - containerPort: 80
    ```
 ---
 
@@ -213,8 +217,9 @@ Vamos a desplegar una aplicación utilizando un archivo yaml que contendrá la i
          labels:
            app: web-nginx
 ```
-* El template.metadata.labels define una etiqueta (app:web-nginx) para los Pods que envuelven tu contenedor
+
 * El campo selector.matchLabels selecciona aquellos Pods con una etiqueta (app:web-nginx) para que pertenezcan a este Deployment
+* El template.metadata.labels define una etiqueta (app:web-nginx) para los Pods que envuelven tu contenedor
 
 ---
 
@@ -227,12 +232,12 @@ Vamos a desplegar una aplicación utilizando un archivo yaml que contendrá la i
          - name: web-nginx
             image: nginx:mainline-alpine
             ports:
-              - containerPort: 30080
+              - containerPort: 80
    ```
 
 * Un nombre para el contenedor (web-nginx)
 * El nombre de la imagen Docker a usar (nginx:mainline-alpine)
-* Puerto en el que exponemos el contenedor (30080)
+* Puerto en el que exponemos el contenedor (80)
 
 ---
 
@@ -240,13 +245,13 @@ Vamos a desplegar una aplicación utilizando un archivo yaml que contendrá la i
 
 Despliega la aplicación en el cluster:
 
-   ```bash
-   kubectl apply -f [ruta-al-archivo]/nginx.yaml
-   ```
+```bash
+kubectl apply -f [ruta-al-archivo]/nginx.yaml
+```
 
-   ```bash
-   kubectl get pods
-   ```
+```bash
+kubectl get pods
+```
 
 ---
 
@@ -266,10 +271,7 @@ Basta con añadir el símbolo `---` entre el despliegue y el servicio:
 
 ```bash
 kubectl apply -f [ruta-al-archivo]/nginx.yaml
-```
-
-```bash
-kubectl get deploy,svc
+kubectl get kubectl get deploy,svc,pod
 ```
 [http://localhost:8080](http://localhost:8080)
 
@@ -289,17 +291,13 @@ La escalabilidad se logra cambiando el número de réplicas en un Despliegue.
 Comprobamos el número de pods y despliegues:
 
 ```bash
-   kubectl get pods
-```
-
-```bash
-   kubectl get deployments
+kubectl get deploy,svc,pod
 ```
 
 Escala el deployment para tener 2 réplicas:
 
 ```bash
-   kubectl scale deployment web-nginx --replicas=2
+kubectl scale deployment web-nginx --replicas=2
 ```
 
 Si volvemos a comprobar el número de pods y despliegues, veremos que ahora tenemos dos en vez de uno.
@@ -371,7 +369,7 @@ spec:
         - name: wordpress
           image: bitnami/wordpress:latest
           ports:
-            - containerPort: 30001
+            - containerPort: 8080
 ```
 
 ---
@@ -389,6 +387,8 @@ spec:
               value: 'bn_wordpress'
             - name: WORDPRESS_DATABASE_NAME
               value: 'bitnami_wordpress'
+            - name: WORDPRESS_DATABASE_HOST
+              value: 'service-mariadb' # Nombre del servicio de MariaDB
 ```
 
 * El campo env define las variables de entorno que se usarán en el contenedor.
@@ -463,7 +463,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mariadb
+  name: service-mariadb
 spec:
   type: ClusterIP
   selector:
@@ -474,8 +474,8 @@ spec:
       targetPort: 3306
 ```
 
-* El tipo de servicio ClusterIP sólo es accesible desde dentro del clúster, lo que significa que otros recursos en el mismo cluster pueden acceder a la base de datos MariaDB utilizando esta dirección IP virtual y el puerto especificado.
-* Ventaja: Este enfoque es adecuado si solo deseas que los recursos dentro del cluster se conecten a la base de datos MariaDB, y no necesitas exponerla públicamente.
+* El tipo de servicio ClusterIP sólo es accesible desde dentro del clúster, utilizando esta dirección IP virtual y el puerto especificado
+* Este enfoque es adecuado si no necesitas exponer el servicio públicamente
 
 ---
 
@@ -483,13 +483,7 @@ spec:
 
 ```bash
 kind create cluster --config [ruta-al-archivo]/cluster-config-wp.yaml
-```
-
-```bash
 kubectl apply -f [ruta-al-archivo]/wordpress.yaml
-```
-
-```bash
 kubectl apply -f [ruta-al-archivo]/mariadb.yaml
 ```
 
@@ -504,15 +498,11 @@ Si accedemos a la ruta [http://localhost:8081](http://localhost:8081) veremos qu
 
 ## Volúmenes persistentes
 
-Hasta ahora hemos usado volúmenes efímeros, que son volúmenes que se crean y se destruyen junto con el Pod.
+Si queremos desplegar una aplicación que requiera almacenamiento persistente, necesitaremos usar volúmenes persistentes:
+  * Los volúmenes son directorios que se montan en los contenedores de los Pods
+  * Los volúmenes se pueden usar para almacenar datos que deben sobrevivir a la vida del Pod
 
-Sin embargo, si queremos desplegar una aplicación que requiera almacenamiento persistente, necesitaremos usar volúmenes persistentes.
-
-Los volúmenes son directorios que se montan en los contenedores de los Pods.
-
-Los volúmenes se pueden usar para almacenar datos que deben sobrevivir a la vida del Pod.
-
-Si probamos a borrar el Pod de MariaDB, veremos que se crea uno nuevo, pero la aplicación no funciona o se habrá perdido la información.
+Si probamos a borrar el Pod de MariaDB, veremos que se crea uno nuevo, pero la aplicación no funciona o se habrá perdido la información:
 
 ```bash
 kubectl delete pod mariadb-<id-pod>
@@ -584,10 +574,12 @@ Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicaci�
 
 1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 8085 de tu máquina local.
 
-2. Crea un despliegue en el cluster para ejecutar la aplicación de Drupal.
+2. Despliega una aplicación de Drupal dentro del cluster. 
 
-3. Crea un despliegue en el cluster para conectar Drupal a una base de datos.
+3. La aplicación Drupal debe conectarse a una base de datos MySQL desplegada en el cluster.
 
-4. Una vez puedas acceder a la aplicación, modifica el despliegue de la base de datos para que use un volumen persistente.
+4. Una vez puedas acceder a la aplicación, usa volúmenes persistentes para almacenar los datos de la base de datos y de la aplicación Drupal.
 
 5. Modifica el despliegue de Drupal para que tenga dos réplicas.
+
+6. Utiliza un Vagrantfile para crear una máquina virtual donde puedas crear el cluster de kind con los archivos anteriormente creados.
