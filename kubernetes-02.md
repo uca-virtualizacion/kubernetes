@@ -69,10 +69,10 @@ Crear proxy para acceder a la aplicación (ejecutar en otra terminal):
 `kubectl proxy`
 
 Acceder a la aplicación:
-[http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>/proxy/](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod/proxy/>)
-
-Redirigiendo un puerto en la máquina local a un puerto del Pod:
-`kubectl port-forward <nombre-del-pod> 8080:80`
+  * Crear proxy para acceder a la aplicación con `kubectl proxy`:
+    * [http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>/proxy/](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod/proxy/>)
+  * Redirigiendo un puerto en la máquina local a un puerto del Pod con `kubectl port-forward <nombre-del-pod> 8080:80`:
+    * [http://localhost:8080](http://localhost:8080)
 
 ---
 
@@ -83,10 +83,9 @@ Un servicio proporciona una forma constante de acceder a una aplicación.
 Crear servicio para despliegue de nginx:
 `kubectl expose deployment web-nginx --type=NodePort --port=80`
 
-Podemos ver el puerto asignado al servicio en el campo NodePort mediante el comando:
-`kubectl describe services/web-nginx` Información del servicio
-
-`kubectl get services` Listado de servicios del cluster
+Podemos ver el puerto asignado al servicio en el campo NodePort mediante:
+  * `kubectl describe services/web-nginx` (Información del servicio)
+  * `kubectl get services` (Listado de servicios del cluster)
 
 Para asignar puerto específico, usar archivo de configuración.
 
@@ -531,7 +530,7 @@ spec:
 
 ---
 
-## Volúmenes persistentes (Modificación de despliegue de MariaDB)
+## Volúmenes persistentes (Modificación de MariaDB)
 
 ```yaml
 ...
@@ -549,7 +548,7 @@ spec:
 
 ---
 
-## Volúmenes persistentes (Modificación de despliegue de MariaDB)
+## Volúmenes persistentes (Modificación de MariaDB)
 
 ```yaml
 ...
@@ -567,19 +566,3 @@ spec:
 * spec.volumes.persistentVolumeClaim.claimName define el nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
 
 Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicación sigue funcionando (previamente borrar el pod de Wordpress).
-
----
-
-## Tarea Adicional
-
-1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 8085 de tu máquina local.
-
-2. Despliega una aplicación de Drupal dentro del cluster. 
-
-3. La aplicación Drupal debe conectarse a una base de datos MySQL desplegada en el cluster.
-
-4. Una vez puedas acceder a la aplicación, usa volúmenes persistentes para almacenar los datos de la base de datos y de la aplicación Drupal.
-
-5. Modifica el despliegue de Drupal para que tenga dos réplicas.
-
-6. Utiliza un Vagrantfile para crear una máquina virtual donde puedas crear el cluster de kind con los archivos anteriormente creados.

@@ -119,5 +119,4 @@ dist
 .config
 
 # PDF created with Marp:
-kubernetes-01.pdf
-kubernetes-02.pdf
+*.pdf
