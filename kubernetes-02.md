@@ -65,9 +65,6 @@ Listado de despliegues:
 Obtener el nombre del Pod que ejecuta la aplicación:
 `kubectl get pods`
 
-Crear proxy para acceder a la aplicación (ejecutar en otra terminal):
-`kubectl proxy`
-
 Acceder a la aplicación:
   * Crear proxy para acceder a la aplicación con `kubectl proxy`:
     * [http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>/proxy/](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod/proxy/>)
@@ -270,7 +267,7 @@ Basta con añadir el símbolo `---` entre el despliegue y el servicio:
 
 ```bash
 kubectl apply -f [ruta-al-archivo]/nginx.yaml
-kubectl get kubectl get deploy,svc,pod
+kubectl get deploy,svc,pod
 ```
 [http://localhost:8080](http://localhost:8080)
 
