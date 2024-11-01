@@ -597,11 +597,11 @@ Ahora podemos acceder desde http://localhost:8080.
 
 # Ejercicio
 
-1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 80 de tu máquina local.
+1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 8085 de tu máquina local.
 
 2. Crea un despliegue en el cluster para ejecutar la aplicación de Apache.
 
-3. Configura un servicio para el deployment de Apache de manera que puedas acceder a la aplicación desde tu navegador a través del puerto 80.
+3. Configura un servicio para el deployment de Apache de manera que puedas acceder a la aplicación desde tu navegador a través del puerto 8085.
 
 4. Realiza pruebas para asegurarte de que se abre la página de Apache.
 
