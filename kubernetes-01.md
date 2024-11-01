@@ -41,17 +41,17 @@ img[alt~="center"] {
 
 **Kubernetes** plataforma de código abierto para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores.
 
-**Nodo**: máquina física o virtual en la que se ejecutan los componentes del clúster.
-
 **Control-plane**: conjunto de componentes encargado de gestionar el clúster.
 
-**Kubelet**: agente que se ejecuta en cada nodo para asegurar que los contenedores se ejecuten en un Pod.
-
-**Kube-proxy**: proxy que se ejecuta en cada nodo para mantener las reglas de red.
+**Nodo**: máquina física o virtual en la que se ejecutan los componentes del clúster.
 
 **Pod**: colección de contenedores que contienen una aplicación y sus dependencias:
    - Los contenedores en un Pod se ejecutan en el mismo nodo
    - Los Pods son la unidad básica de ejecución en Kubernetes
+
+**Kubelet**: agente que se ejecuta en cada nodo para asegurar que los contenedores se ejecuten en un Pod.
+
+**Kube-proxy**: proxy que se ejecuta en cada nodo para mantener las reglas de red.
 
 ---
 
@@ -79,16 +79,24 @@ Hay varias formas de instalar kind en cada Sistema Operativo, a continuación mo
 
 ### Instalación de kind (Linux)
 
+Según el procesador de tu máquina, descarga la versión correspondiente de kind:
+
 ```bash
 # For AMD64 / x86_64
-[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
 # For ARM64
-[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-arm64
+[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-arm64
 ```
 
 ```bash
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
+```
+
+Verifica que kind se haya instalado correctamente:
+
+```bash
+kind version
 ```
 
 ---
