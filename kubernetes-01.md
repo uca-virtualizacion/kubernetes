@@ -271,15 +271,21 @@ kubectl create deployment web-nginx --image=nginx:alpine
 
 ¿Qué ha hecho el comando anterior?:
 
-1. Buscar un nodo donde ejecutar una instancia de la aplicación (actualmente sólo tenemos 1 nodo disponible)
+1. Buscar un nodo donde ejecutar una instancia de la aplicación (actualmente sólo tenemos un nodo disponible)
 2. Programar la ejecución de la aplicación en ese nodo
 3. Configurar el cluster para reprogramar la instancia en un nuevo nodo cuando fuera necesario
 
 Verificar despliegue:
 
-   ```bash
-   kubectl get deployments
-   ```
+```bash
+kubectl get deployments
+```
+
+Eliminar un despliegue:
+
+```bash
+kubectl delete deployment <nombre-del-despliegue>
+```
 
 ---
 
@@ -324,6 +330,18 @@ kubectl port-forward <nombre-del-pod> <puerto-local>:<puerto-pod>
 
 ---
 
+## Visualización para PRUEBAS Y DESARROLLO... ¿Y producción?
+
+El uso de proxies o port-forwarding es __recomendable para pruebas y desarrollo__... pero __no para aplicaciones en producción__:
+
+- No son escalables
+- No son seguros
+- No permiten acceso externo
+
+Para exponer una aplicación de manera segura y escalable, necesitamos un __servicio__.
+
+---
+
 ## Servicios (Services) (I)
 
 **Servicio**: abstracción que define una política de acceso a un conjunto de pods.
@@ -342,12 +360,18 @@ Listar servicios actuales:
 kubectl get services
 ```
 
-Por defecto se crea un servicio llamado kubernetes que permite acceder a la API del cluster.
+Por defecto se crea un servicio `kubernetes` para acceder a la API del cluster.
 
 Si queremos ver en un mismo comando los servicios, los despliegues y los pods:
 
 ```bash
 kubectl get pods,deployments,services
+```
+
+Para eliminar un servicio:
+
+```bash
+kubectl delete service <nombre-del-servicio>
 ```
 
 ---
@@ -360,23 +384,46 @@ Para crear un nuevo servicio y exponerlo al tráfico externo, utilizaremos el co
 kubectl expose deployment web-nginx --type=NodePort --port=80
 ```
 
-Podemos ver el puerto asignado al servicio en el campo `NodePort` mediante el comando:
+Podemos ver el puerto asignado al servicio en el campo `NodePort` listando los servicios con `kubectl get services` o visualizando los detalles del servicio:
+
 ```bash
 kubectl describe services/web-nginx
-kubectl get services/web-nginx
 ```
 
-Sin embargo, aún no podremos acceder a la aplicación mediante el puerto indicado en el campo `NodePort`:
-   - El puerto no está expuesto fuera del cluster
-   - Como el puerto asignado es aleatorio, no sabemos qué puerto exponer
+---
+
+## Acceder a un servicio
+
+Para acceder a un servicio, necesitamos:
+   - Dirección IP del nodo
+   - Puerto asignado al servicio (`kubectl get services`)
+
+Podemos obtener la dirección IP del nodo con el comando:
+   
+```bash
+   kubectl get nodes -o wide
+```
+
+El comando anterior nos mostrará la dirección IP del nodo en la columna `INTERNAL-IP`.
 
 ---
+
+## Problemas para acceder
+
+Si el puerto `NodePort` es aleatorio, no conoceremos el puerto asignado cada vez que se reinicie el cluster, se cree un nuevo servicio, se modifique el servicio, etc.
+
+Por ello, __es recomendable asignar un puerto específico__ al servicio usando un archivo de configuración `yaml`:
+
+- Permite versionar la configuración
+- Facilita la replicación del entorno
+- Evita errores humanos
+
+---
+
 
 ## Servicios como IaC (I)
 
 Kubernetes asigna un puerto aleatorio entre 30000 y 32767 para cada servicio.
-
-Si queremos asignar un NodePort específico, tendremos que hacerlo mediante un archivo de configuración `yaml`:
 
 ```yaml
 apiVersion: v1
@@ -448,13 +495,38 @@ kubectl apply -f [ruta-al-archivo]/[nombre-archivo].yaml
 ```bash
 kubectl get services
 ```
+
 ---
 
-## Mapeo de puertos del cluster (I)
+## Tipos de servicios
 
-El mapeo de puertos de un cluster permite acceder a los servicios de un Pod desde fuera del cluster.
+Aunque hemos usado un servicio `NodePort`, existen varios tipos:
 
-Usando un archivo de configuración, podemos crear un cluster con un mapeo de puertos personalizado:
+* **ClusterIP**: expone el servicio en una dirección IP interna del clúster. Este tipo de servicio sólo es accesible desde dentro del clúster.
+* **NodePort**: expone el servicio en cada IP del nodo en un puerto estático (el NodePort). El servicio será accesible desde fuera del clúster haciendo una petición a <NodeIP>:<NodePort>.
+* **LoadBalancer**: expone el servicio externamente mediante un balanceador de carga.
+
+Para utilizar un servicio de tipo LoadBalancer, necesitamos un proveedor de servicios en la nube que soporte este tipo de servicio, algo que por defecto no tenemos en nuestro cluster de kind.
+
+---
+
+## Problemas para acceder con la dirección IP del nodo
+
+Hemos usado la dirección IP del nodo para acceder a los servicios, pero esto no es recomendable en un entorno de producción:
+
+- La dirección IP del nodo puede cambiar si se reinicia el cluster o si se añaden o eliminan nodos
+- Falta de escalabilidad y seguridad
+- Falta de abstracción (más atado a la infraestructura)
+s
+En __producción__, es recomendable utilizar un servicio de tipo `LoadBalancer`.
+
+En __entornos locales o de pruebas__ como `kind`, podemos acceder a los servicios a través de `localhost`.
+
+---
+
+## Mapeo de puertos (I)
+
+Usando un archivo de configuración `yaml`, podemos crear un cluster con un mapeo de puertos personalizado:
 
 ```yaml
 kind: Cluster
@@ -512,23 +584,11 @@ kubectl create deployment web-nginx --image=nginx:alpine
 kubectl apply -f [ruta-al-servicio]/[nombre-archivo-servicio].yaml
 ```
 
-Prueba a acceder a la aplicación mediante los puertos indicados anteriormente: http://localhost:8080
+__http://localhost:8080__
 
 ---
 
-## Tipos de servicios
-
-Aunque en este caso hemos utilizado un servicio de tipo NodePort, existen varios tipos de servicios:
-
-* **ClusterIP**: expone el servicio en una dirección IP interna del clúster. Este tipo de servicio sólo es accesible desde dentro del clúster.
-* **NodePort**: expone el servicio en cada nodo del clúster en una dirección IP estática. Un puerto (el puerto NodePort) en cada nodo reenvía al mismo puerto en el servicio.
-* **LoadBalancer**: expone el servicio externamente mediante un balanceador de carga externo en la nube.
-
-Para utilizar un servicio de tipo LoadBalancer, necesitamos un proveedor de servicios en la nube que soporte este tipo de servicio, algo que por defecto no tenemos en nuestro cluster de kind.
-
----
-
-## Tarea Adicional
+# Ejercicio
 
 1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 80 de tu máquina local.
 
