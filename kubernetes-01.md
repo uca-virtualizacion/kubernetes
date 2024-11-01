@@ -37,21 +37,29 @@ img[alt~="center"] {
 
 <!-- paginate: true -->
 
-## ¿Qué es Kubernetes? (k8s)
+## ¿Qué es Kubernetes?
 
-**Kubernetes** plataforma de código abierto para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores.
+**Kubernetes** plataforma de código abierto para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores. Abreviada como __k8s__.
 
 **Control-plane**: conjunto de componentes encargado de gestionar el clúster.
 
 **Nodo**: máquina física o virtual en la que se ejecutan los componentes del clúster.
 
-**Pod**: colección de contenedores que contienen una aplicación y sus dependencias:
-   - Los contenedores en un Pod se ejecutan en el mismo nodo
-   - Los Pods son la unidad básica de ejecución en Kubernetes
+**Kube-proxy**: proxy que se ejecuta en cada nodo para mantener las reglas de red.
 
 **Kubelet**: agente que se ejecuta en cada nodo para asegurar que los contenedores se ejecuten en un Pod.
 
-**Kube-proxy**: proxy que se ejecuta en cada nodo para mantener las reglas de red.
+---
+
+## ¿Qué son los Pods de Kubernetes?
+
+**Pod**: grupo de uno o más contenedores:
+   - Los contenedores en un Pod se ejecutan en el mismo nodo
+   - Los Pods son la unidad básica de ejecución en Kubernetes
+
+Los Pods se usan de dos formas:
+   - __Para ejecutar un solo contenedor__ (wrapper)
+   - Para ejecutar varios contenedores que necesitan compartir recursos
 
 ---
 
@@ -584,9 +592,8 @@ kubectl create deployment web-nginx --image=nginx:alpine
 kubectl apply -f [ruta-al-servicio]/[nombre-archivo-servicio].yaml
 ```
 
-__http://localhost:8080__
+Ahora podemos acceder desde http://localhost:8080.
 
----
 
 # Ejercicio
 
