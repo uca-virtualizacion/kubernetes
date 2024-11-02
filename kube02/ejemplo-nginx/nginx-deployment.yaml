@@ -1,22 +1,8 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: service-nginx
-spec:
-  selector:
-    app: web-nginx
-  type: NodePort
-  ports:
-    - name: http
-      port: 80
-      nodePort: 30080
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-nginx
+  name: nginx-deployment
 spec:
-  replicas: 4
   selector:
     matchLabels:
       app: web-nginx
@@ -26,7 +12,7 @@ spec:
         app: web-nginx
     spec:
       containers:
-        - name: web-nginx
+        - name: nginx
           image: nginx:mainline-alpine
           ports:
             - containerPort: 80

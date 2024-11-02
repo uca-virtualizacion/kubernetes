@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+        - name: wordpress
+          image: bitnami/wordpress:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: 'yes'
+            - name: WORDPRESS_DATABASE_USER
+              value: 'bn_wordpress'
+            - name: WORDPRESS_DATABASE_NAME
+              value: 'bitnami_wordpress'
+            - name: WORDPRESS_DATABASE_HOST
+              value: 'service-mariadb'

@@ -289,6 +289,23 @@ Verificar despliegue:
 kubectl get deployments
 ```
 
+---
+
+## Despliegue (IV)
+
+Podemos ver los pods creados por el despliegue con:
+
+```bash
+kubectl get pods
+```
+
+Si borramos un pod, el despliegue creará uno nuevo automáticamente:
+
+```bash
+kubectl delete pod <nombre-del-pod>
+kubectl get deployments,pods
+```
+
 Eliminar un despliegue:
 
 ```bash

@@ -120,3 +120,5 @@ dist
 
 # PDF created with Marp:
 *.pdf
+
+solucion-entregable/.vagrant

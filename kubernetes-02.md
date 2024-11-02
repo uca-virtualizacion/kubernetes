@@ -46,8 +46,6 @@ img[alt~="center"] {
 
 `kind create cluster` Crear cluster local
 
-`kubectl cluster-info` Información del cluster
-
 `kubectl get nodes` Lista los nodos del cluster
 
 `kind delete cluster` Borrado del cluster
@@ -55,21 +53,8 @@ img[alt~="center"] {
 Crear un despliegue de nginx en un cluster: 
 `kubectl create deployment web-nginx --image=nginx:alpine`
 
-Listado de despliegues:
-`kubectl get deployments`
-
----
-
-## Recordatorio...
-
-Obtener el nombre del Pod que ejecuta la aplicación:
-`kubectl get pods`
-
-Acceder a la aplicación:
-  * Crear proxy para acceder a la aplicación con `kubectl proxy`:
-    * [http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod>/proxy/](http://localhost:8001/api/v1/namespaces/default/pods/<nombre-del-pod/proxy/>)
-  * Redirigiendo un puerto en la máquina local a un puerto del Pod con `kubectl port-forward <nombre-del-pod> 8080:80`:
-    * [http://localhost:8080](http://localhost:8080)
+Listado de despliegues, pods y servicios:
+`kubectl get deployments,pods,services`
 
 ---
 
@@ -105,8 +90,6 @@ spec:
     app: web-nginx
 ```
 
-`kubectl apply -f [ruta-al-archivo]/[nombre-archivo].yaml`
-
 ---
 
 ## Recordatorio...
@@ -124,8 +107,6 @@ nodes:
     protocol: TCP
 ```
 
-`kind create cluster --config [ruta-al-archivo]/cluster-config.yaml`
-
 ---
 
 ## Recordatorio...
@@ -140,9 +121,6 @@ Repetimos los pasos anteriores para desplegar la aplicación y crear el servicio
 
 ```bash
 kubectl create deployment web-nginx --image=nginx:alpine
-```
-
-```bash
 kubectl apply -f [ruta-al-archivo]/[nombre-archivo].yaml
 ```
 
@@ -168,7 +146,7 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
    apiVersion: apps/v1
    kind: Deployment
    metadata:
-     name: web-nginx
+     name: nginx-deployment
    spec:
      selector:
        matchLabels:
@@ -179,7 +157,7 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
            app: web-nginx
        spec:
          containers:
-         - name: web-nginx
+         - name: nginx
            image: nginx:mainline-alpine
             ports:
               - containerPort: 80
@@ -192,12 +170,12 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
    apiVersion: apps/v1
    kind: Deployment
    metadata:
-     name: web-nginx
+     name: nginx-deployment
    ```
 
-* El tipo de recurso (Deployment)
-* La versión de este tipo de recurso (apps/v1)
-* El nombre de este recurso específico (web-nginx)
+* __kind__: tipo de recurso (Deployment)
+* __apiVersion__: versión de este tipo de recurso (apps/v1)
+* __metadata.name__: recurso específico (web-nginx)
 
 ---
 
@@ -214,8 +192,8 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
            app: web-nginx
 ```
 
-* El campo selector.matchLabels selecciona aquellos Pods con una etiqueta (app:web-nginx) para que pertenezcan a este Deployment
-* El template.metadata.labels define una etiqueta (app:web-nginx) para los Pods que envuelven tu contenedor
+* __selector.matchLabels__: selecciona aquellos Pods con una etiqueta (app:web-nginx) para que pertenezcan a este Deployment
+* __template.metadata.labels__: etiqueta (app:web-nginx) para los Pods que envuelven tu contenedor
 
 ---
 
@@ -225,13 +203,13 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
      template:
        spec:
          containers:
-         - name: web-nginx
+         - name: nginx
             image: nginx:mainline-alpine
             ports:
               - containerPort: 80
    ```
 
-* Un nombre para el contenedor (web-nginx)
+* Un nombre para el contenedor (nginx)
 * El nombre de la imagen Docker a usar (nginx:mainline-alpine)
 * Puerto en el que exponemos el contenedor (80)
 
@@ -245,17 +223,21 @@ Despliega la aplicación en el cluster:
 kubectl apply -f [ruta-al-archivo]/nginx.yaml
 ```
 
+Si creamos un servicio y usamos un mapeo de puertos para la configuración del cluster, podremos acceder a la aplicación en localhost.
+
 ```bash
-kubectl get pods
+kind create cluster --config [ruta-archivo-configuracion-cluster.yaml]
+kubectl apply -f [ruta-directorio-archivos-yaml]
+kubectl get deploy,svc,pod
 ```
+
+[http://localhost:<Puerto_mapeado>](http://localhost:<Puerto_mapeado>)
 
 ---
 
 ## Archivo de despliegue (VI)
 
-Vamos a modificar el archivo de despliegue para añadir un servicio que exponga la aplicación.
-
-Basta con añadir el símbolo `---` entre el despliegue y el servicio:
+Se puede usar el símbolo `---` para separar diferentes tipos de recursos (deployment, service...) en un solo archivo de configuración...
 
    ```yaml
    kind: Deployment
@@ -265,11 +247,7 @@ Basta con añadir el símbolo `---` entre el despliegue y el servicio:
    ...
    ```
 
-```bash
-kubectl apply -f [ruta-al-archivo]/nginx.yaml
-kubectl get deploy,svc,pod
-```
-[http://localhost:8080](http://localhost:8080)
+... aunque es recomendable mantenerlos en archivos separados para facilitar la lectura.
 
 ---
 
@@ -293,7 +271,7 @@ kubectl get deploy,svc,pod
 Escala el deployment para tener 2 réplicas:
 
 ```bash
-kubectl scale deployment web-nginx --replicas=2
+kubectl scale deployment nginx-deployment --replicas=2
 ```
 
 Si volvemos a comprobar el número de pods y despliegues, veremos que ahora tenemos dos en vez de uno.
@@ -302,35 +280,43 @@ Si volvemos a comprobar el número de pods y despliegues, veremos que ahora tene
 
 ## Escalado de la aplicación (III)
 
-Al igual que hemos hecho anteriormente, podemos escalar un deployment usando un archivo de configuración:
+Podemos escalar un deployment desde un archivo de configuración:
 
 ```yaml
    apiVersion: apps/v1
    kind: Deployment
    metadata:
-     name: web-nginx
+     name: nginx-deployment
    spec:
      replicas: 4
      ...
 ```
   
 ```bash
-  kubectl apply -f [ruta-al-archivo]/nginx.yaml
+  kubectl apply -f [ruta-directorio-archivos-yaml]
 ```
 
-Si probamos a borrar manualmente uno de los pods, inmediatamente se creará otro para mantener el número de réplicas.
+- Al borrar uno de los pods, se creará otro para mantener el número de réplicas
 
-En un entorno de producción, esto proporcionará una alta disponibilidad de la aplicación.
+- En producción, esto proporcionará __alta disponibilidad__ de la aplicación
 
 ---
 
 ## Varias aplicaciones
 
-Hasta ahora, sólo hemos desplegado una aplicación en el cluster.
+Hasta ahora, sólo hemos desplegado una aplicación en el cluster:
 
-Lo más probable es que en un sistema real necesitemos desplegar varias aplicaciones: backend, base de datos, etc.
+- Lo más probable es que en un sistema real necesitemos desplegar varias aplicaciones: backend, base de datos, etc.
+- Vamos a desplegar una aplicación __Wordpress__, necesitaremos:
+  - Configuración del cluster
+  - Despliegue Wordpress
+  - Servicio Wordpress
+  - Despliegue MariaDB
+  - Servicio MariaDB
 
-A continuación vamos a crear tres archivos de configuración: la configuración del cluster, Wordpress y MariaDB.
+---
+
+## Varias aplicaciones (Configuración del cluster)
 
 ```yaml
 kind: Cluster
@@ -387,7 +373,7 @@ spec:
               value: 'service-mariadb' # Nombre del servicio de MariaDB
 ```
 
-* El campo env define las variables de entorno que se usarán en el contenedor.
+* __env__: variables de entorno que se usarán en el contenedor.
 * Estas variables están definidas en la imagen de Docker que vamos a usar: [https://hub.docker.com/r/bitnami/wordpress](https://hub.docker.com/r/bitnami/wordpress)
 
 ---
@@ -470,8 +456,8 @@ spec:
       targetPort: 3306
 ```
 
-* El tipo de servicio ClusterIP sólo es accesible desde dentro del clúster, utilizando esta dirección IP virtual y el puerto especificado
-* Este enfoque es adecuado si no necesitas exponer el servicio públicamente
+* El tipo de servicio ClusterIP sólo es accesible desde dentro del clúster
+* __Enfoque adecuado si no necesitas exponer el servicio públicamente__
 
 ---
 
@@ -479,16 +465,16 @@ spec:
 
 ```bash
 kind create cluster --config [ruta-al-archivo]/cluster-config-wp.yaml
-kubectl apply -f [ruta-al-archivo]/wordpress.yaml
-kubectl apply -f [ruta-al-archivo]/mariadb.yaml
+kubectl apply -f [ruta-directorio-archivos-yaml]
 ```
 
 Veamos nuestros servicios, despliegues y pods:
+
 ```bash
 kubectl get svc,deploy,pod
 ```
 
-Si accedemos a la ruta [http://localhost:8081](http://localhost:8081) veremos que tenemos Wordpress funcionando.
+En [http://localhost:8081](http://localhost:8081) veremos que tenemos Wordpress funcionando.
 
 ---
 
@@ -512,7 +498,7 @@ kubectl delete pod mariadb-<id-pod>
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mariadb-pvc-claim
+  name: mariadb-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -520,10 +506,10 @@ spec:
     requests:
       storage: 256Mi
 ```
-* PersistentVolumeClaim indica que es un recurso de tipo volumen persistente
-* El campo metadata.name define el nombre del volumen persistente
-* El campo spec.accessModes define los modos de acceso al volumen
-* El campo spec.resources.requests.storage define el tamaño del volumen
+* __PersistentVolumeClaim__: recurso de tipo volumen persistente
+* __metadata.name__: nombre del volumen persistente
+* __spec.accessModes__: modos de acceso al volumen
+* __spec.resources.requests.storage__: tamaño del volumen
 
 ---
 
@@ -535,31 +521,32 @@ spec:
 ...
     spec:
       containers:
-        ...
+        - name: mariadb
+          image: bitnami/mariadb:latest
+          ...
           volumeMounts:
             - name: mariadb-persistent-storage
               mountPath: /bitnami/mariadb
 ```
-* spec.containers.volumeMounts.name define el nombre del volumen
-* spec.containers.volumeMounts.mountPath especifica que este volumen se montará en el directorio /bitnami/mariadb dentro del contenedor
+* __spec.containers.volumeMounts.name__: nombre del volumen
+* __spec.containers.volumeMounts.mountPath__: directorio en el que se montará el volumen dentro del contenedor
 
 ---
 
 ## Volúmenes persistentes (Modificación de MariaDB)
 
 ```yaml
-...
     spec:
-      containers:
-        ...
-          volumeMounts:
-            ...
+      containers: ...
+          volumeMounts: ...
       volumes:
         - name: mariadb-persistent-storage
           persistentVolumeClaim:
-            claimName: mariadb-pvc-claim
+            claimName: mariadb-pvc
 ```
-* spec.volumes.name define el nombre del volumen
-* spec.volumes.persistentVolumeClaim.claimName define el nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
+* __spec.volumes.name__: nombre del volumen
+* __spec.volumes.persistentVolumeClaim.claimName__: nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
 
-Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicación sigue funcionando (previamente borrar el pod de Wordpress).
+- Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicación sigue funcionando...
+
+- ...Pero para asegurarnos de que los datos de Wordpress no se pierdan, necesitamos hacer lo mismo para Wordpress.
