@@ -28,17 +28,22 @@ img[alt~="center"] {
 
 ## Ejercicio
 
-1. Crea un cluster de kind con un mapeo de puertos personalizado que apunte al puerto 8085 de tu máquina local.
+1. Utiliza un Vagrantfile para crear una máquina virtual donde puedas crear el cluster de kind con los archivos anteriormente creados:
+- El Vagrantfile debe aprovisionar la instalación de docker
+- Las de kind y kubectl pueden realizarse manualmente
 
-2. Despliega una aplicación de Drupal dentro del cluster. 
+2. Crea un cluster de kind con un mapeo de puertos que apunte al puerto 8085 de tu máquina local
 
-3. La aplicación Drupal debe conectarse a una base de datos MySQL desplegada en el cluster.
+---
 
-4. Una vez puedas acceder a la aplicación, usa volúmenes persistentes para almacenar los datos de la base de datos y de la aplicación Drupal.
+3. Despliega una aplicación de Drupal dentro del cluster:
+- Usa la [imagen oficial](https://hub.docker.com/_/drupal) más reciente
+- Usa una base de datos MySQL desplegada en el cluster (usa la imagen oficial)
+- Usa volúmenes persistentes para almacenar los datos de MySQL y Drupal
+  - En la documentación de la imagen de Drupal se indica los directorios donde se almacenan los datos
+  - Para el directorio /var/www/html/sites de Drupal, necesitarás usar initContainers para copiar los archivos de configuración
 
-5. Modifica el despliegue de Drupal para que tenga dos réplicas.
-
-6. Utiliza un Vagrantfile para crear una máquina virtual donde puedas crear el cluster de kind con los archivos anteriormente creados.
+4. Elimina todos los pods y demuestra que los datos persisten
 
 ---
 

@@ -550,3 +550,71 @@ spec:
 - Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicación sigue funcionando...
 
 - ...Pero para asegurarnos de que los datos de Wordpress no se pierdan, necesitamos hacer lo mismo para Wordpress.
+
+---
+
+## initContainers
+
+Los initContainers son contenedores que se ejecutan antes de que se inicie el contenedor principal.
+
+Podemos usar initContainers para copiar archivos de configuración, descargar archivos, etc.
+
+---
+
+## initContainers (Ejemplo)
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /usr/share/nginx/html && echo \"Hello World!\" > /usr/share/nginx/html/index.html"]
+          volumeMounts:
+            - name: nginx-content
+              mountPath: /usr/share/nginx/html
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-content
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: nginx-content
+          persistentVolumeClaim:
+            claimName: nginx-content-pvc
+```
+---
+
+## initContainers (Ejemplo)
+
+```yaml
+...
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /usr/share/nginx/html && echo "Hello, World!" > /usr/share/nginx/html/index.html"]
+          volumeMounts:
+            - name: nginx-content
+              mountPath: /usr/share/nginx/html
+...
+```
+
+* __initContainers__: sección que contiene la lista de contenedores que se ejecutarán antes de que se inicie el contenedor principal
+* __initContainers.name__: nombre del contenedor
+* __initContainers.image__: imagen del contenedor (busybox es una imagen ligera de Linux, puede ser cualquiera)
+* __initContainers.command__: comando que se ejecutará en el contenedor
+* __initContainers.volumeMounts__: montaje de volúmenes en el contenedor
