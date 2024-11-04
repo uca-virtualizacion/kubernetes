@@ -542,7 +542,7 @@ Hemos usado la dirección IP del nodo para acceder a los servicios, pero esto no
 - La dirección IP del nodo puede cambiar si se reinicia el cluster o si se añaden o eliminan nodos
 - Falta de escalabilidad y seguridad
 - Falta de abstracción (más atado a la infraestructura)
-s
+
 En __producción__, es recomendable utilizar un servicio de tipo `LoadBalancer`.
 
 En __entornos locales o de pruebas__ como `kind`, podemos acceder a los servicios a través de `localhost`.
