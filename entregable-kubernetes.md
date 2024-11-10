@@ -28,15 +28,15 @@ img[alt~="center"] {
 
 ## Ejercicio
 
-1. Utiliza un Vagrantfile para crear una máquina virtual donde puedas crear el cluster de kind con los archivos anteriormente creados:
+1. Utiliza un Vagrantfile para crear una máquina virtual donde puedas crear un cluster de kind:
 - El Vagrantfile debe aprovisionar la instalación de docker
 - Las de kind y kubectl pueden realizarse manualmente
 
-2. Crea un cluster de kind con un mapeo de puertos que apunte al puerto 8085 de tu máquina local
+2. Dentro de la máquina Vagrant, crea un cluster de kind. Debe ser accesible desde el puerto 8085 de tu máquina local
 
 ---
 
-3. Despliega una aplicación de Drupal dentro del cluster:
+3. Usando archivos de configuración, despliega una aplicación de Drupal dentro del cluster:
 - Usa la [imagen oficial](https://hub.docker.com/_/drupal) más reciente
 - Usa una base de datos MySQL desplegada en el cluster (usa la imagen oficial)
 - Usa volúmenes persistentes para almacenar los datos de MySQL y Drupal
