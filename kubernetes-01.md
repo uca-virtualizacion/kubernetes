@@ -39,15 +39,15 @@ img[alt~="center"] {
 
 ## ¿Qué es Kubernetes?
 
-**Kubernetes** plataforma de código abierto para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores. Abreviada como __k8s__.
+**Kubernetes** plataforma de código abierto para automatizar la implementación, el escalado y la administración de aplicaciones en contenedores. Abreviada como __k8s__. Conceptos:
 
-**Control-plane**: conjunto de componentes encargado de gestionar el clúster.
+***Control-plane***: conjunto de componentes encargado de gestionar el clúster.
 
-**Nodo**: máquina física o virtual en la que se ejecutan los componentes del clúster.
+***Nodo***: máquina física o virtual en la que se ejecutan los componentes del clúster.
 
-**Kube-proxy**: proxy que se ejecuta en cada nodo para mantener las reglas de red.
+***Kube-proxy***: proxy que se ejecuta en cada nodo para mantener las reglas de red.
 
-**Kubelet**: agente que se ejecuta en cada nodo para asegurar que los contenedores se ejecuten en un Pod.
+***Kubelet***: agente que se ejecuta en cada nodo para asegurar que los contenedores se ejecuten en un Pod.
 
 ---
 
@@ -91,9 +91,9 @@ Según el procesador de tu máquina, descarga la versión correspondiente de kin
 
 ```bash
 # For AMD64 / x86_64
-[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-amd64
 # For ARM64
-[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-arm64
+[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-arm64
 ```
 
 ```bash
@@ -101,7 +101,7 @@ chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 ```
 
-Verifica que kind se haya instalado correctamente:
+Añádelo al PATH y verifica que kind se haya instalado correctamente:
 
 ```bash
 kind version
@@ -111,52 +111,39 @@ kind version
 
 ### Instalación de kind (MacOS)
 
-1. Instala Homebrew (si aún no lo has hecho):
+Según el procesador de tu máquina, descarga la versión correspondiente de kind:
 
-   ```bash
-   /bin/bash -c "$(curl -fsSL \
-      https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   ```
+```bash
+# For Intel Macs
+[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-darwin-amd64
+# For M1 / ARM Macs
+[ $(uname -m) = arm64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-darwin-arm64
+```
 
-2. Instala kind:
+```bash
+chmod +x ./kind
+mv ./kind /some-dir-in-your-PATH/kind
+```
 
-   ```bash
-   brew install kind
-   ```
+Añádelo al PATH y verifica que kind se haya instalado correctamente:
 
-3. Verifica que kind se haya instalado correctamente:
-
-   ```bash
-   kind version
-   ```
+```bash
+kind version
+```
 
 ---
 
 ### Instalación de kind (Windows)
 
+Se puede instalar como binario o con PowerShell.
+
 1. Abre PowerShell como administrador.
 
-2. Instala Chocolatey (si aún no lo has hecho):
+2. Instala kind:
 
    ```powershell
-   Set-ExecutionPolicy Bypass -Scope Process -Force
-   [System.Net.ServicePointManager]::SecurityProtocol = `
-      [System.Net.ServicePointManager]::SecurityProtocol `
-      -bor 3072 
-   iex ((New-Object `
-     System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-   ```
-
-3. Instala kind:
-
-   ```powershell
-   choco install kind
-   ```
-
-4. Verifica que kind se haya instalado correctamente:
-
-   ```powershell
-   kind version
+   curl.exe -Lo kind-windows-amd64.exe https://kind.sigs.k8s.io/dl/v0.30.0/kind-windows-amd64
+   Move-Item .\kind-windows-amd64.exe c:\some-dir-in-your-PATH\kind.exe
    ```
 
 ---
@@ -211,7 +198,7 @@ Utiliza la API de Kubernetes para interactuar con el clúster.
 ---
 ## Contextos de Kubernetes
 
-En caso de tener varios clusteres:
+En caso de tener varios clusteres (no será nuestro caso, sólo trabajaremos con uno), kubectl utiliza contextos para gestionar la conexión a cada cluster:
 
 1. Ver los contextos disponibles en tu configuración de Kubernetes:
 
@@ -252,11 +239,12 @@ Comprobamos que ya no existen los contenedores:
 
 ## Despliegue (I)
 
-Una vez tenemos un cluster de Kubernetes en funcionamiento, podemos desplegar aplicaciones contenerizadas en él [https://kubernetes.io/docs/](https://kubernetes.io/docs/)
+Una vez tenemos un cluster de Kubernetes en funcionamiento, podemos desplegar aplicaciones contenerizadas en él [(https://kubernetes.io/docs/)](https://kubernetes.io/docs/)
+
+Cada Pod ejecuta una instancia de la aplicación. Los Pods son la unidad básica de ejecución en Kubernetes.
 
 ![width:600 center](img/kubernetes_nodes_01.png)
 
-Cada Pod ejecuta una instancia de la aplicación. Los Pods son la unidad básica de ejecución en Kubernetes.
 
 ---
 
@@ -423,13 +411,15 @@ Para acceder a un servicio, necesitamos:
    - Dirección IP del nodo
    - Puerto asignado al servicio (`kubectl get services`)
 
-Podemos obtener la dirección IP del nodo con el comando:
+Podemos obtener la dirección IP del nodo en la columna `INTERNAL-IP` con el comando:
    
 ```bash
    kubectl get nodes -o wide
 ```
 
-El comando anterior nos mostrará la dirección IP del nodo en la columna `INTERNAL-IP`.
+- `INTERNAL-IP:PORT` puede no funcionar en macOS/Windows con Docker Desktop: la IP es de la red bridge interna de Docker (dentro de la VM de Docker), y el host no tiene ruta hacia esa red.
+- Para pruebas, podemos `kubectl port-forward service/web-nginx 8080:80` y acceder a `localhost:8080`.
+
 
 ---
 
@@ -537,7 +527,7 @@ Para utilizar un servicio de tipo LoadBalancer, necesitamos un proveedor de serv
 
 ## Problemas para acceder con la dirección IP del nodo
 
-Hemos usado la dirección IP del nodo para acceder a los servicios, pero esto no es recomendable en un entorno de producción:
+Hemos usado la dirección IP del nodo para acceder a los servicios, pero esto puede no funcionar en algunos entornos, y no es recomendable en un entorno de producción:
 
 - La dirección IP del nodo puede cambiar si se reinicia el cluster o si se añaden o eliminan nodos
 - Falta de escalabilidad y seguridad
