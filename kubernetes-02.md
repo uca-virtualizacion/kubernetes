@@ -173,9 +173,9 @@ Podemos hacer lo mismo con los despliegues de aplicaciones. Ventajas:
      name: nginx-deployment
    ```
 
-* __kind__: tipo de recurso (Deployment)
 * __apiVersion__: versión de este tipo de recurso (apps/v1)
-* __metadata.name__: recurso específico (web-nginx)
+* __kind__: tipo de recurso (Deployment)
+* __metadata.name__: recurso específico (nginx-deployment)
 
 ---
 
@@ -547,9 +547,7 @@ spec:
 * __spec.volumes.name__: nombre del volumen
 * __spec.volumes.persistentVolumeClaim.claimName__: nombre que se utilizará para solicitar un volumen persistente del cluster de Kubernetes
 
-- Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicación sigue funcionando...
-
-- ...Pero para asegurarnos de que los datos de Wordpress no se pierdan, necesitamos hacer lo mismo para Wordpress.
+- Ahora podemos hacer la prueba de borrar el pod de MariaDB y ver que la aplicación sigue funcionando... (Pero para asegurarnos de que los datos de Wordpress no se pierdan, necesitamos hacer lo mismo para Wordpress).
 
 ---
 
@@ -602,7 +600,6 @@ spec:
 ## initContainers (Ejemplo)
 
 ```yaml
-...
       initContainers:
         - name: init-permissions
           image: busybox
@@ -610,11 +607,20 @@ spec:
           volumeMounts:
             - name: nginx-content
               mountPath: /usr/share/nginx/html
-...
 ```
 
 * __initContainers__: sección que contiene la lista de contenedores que se ejecutarán antes de que se inicie el contenedor principal
 * __initContainers.name__: nombre del contenedor
-* __initContainers.image__: imagen del contenedor (busybox es una imagen ligera de Linux, puede ser cualquiera)
+* __initContainers.image__: imagen del contenedor (busybox es una imagen ligera de Linux, puede usarse cualquiera)
 * __initContainers.command__: comando que se ejecutará en el contenedor
-* __initContainers.volumeMounts__: montaje de volúmenes en el contenedor
+* __initContainers.volumeMounts__: montaje de volúmenes en el contenedor (acepta un campo __subPath__ para montar un subdirectorio del volumen)
+
+
+# Ejercicio
+
+Usando archivos de configuración, despliega una aplicación de Drupal dentro de un cluster de Kubernetes
+- Usa la [imagen oficial](https://hub.docker.com/_/drupal) más reciente
+- Usa una base de datos MySQL desplegada en el cluster (usa la imagen oficial)
+- Usa volúmenes persistentes para almacenar los datos de MySQL y Drupal
+  - En la documentación de la imagen de Drupal se indica los directorios donde se almacenan los datos
+  - Para el directorio /var/www/html/sites de Drupal, necesitarás usar initContainers para copiar los archivos de configuración
