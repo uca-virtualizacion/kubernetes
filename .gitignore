@@ -122,3 +122,8 @@ dist
 *.pdf
 
 solucion-entregable/.vagrant
+
+# Exercises' folders
+kube-terraform-01/*/.*
+kube-terraform-01/*/terraform.tfstate
+kube-terraform-01/*/terraform.tfstate.backup
