@@ -41,6 +41,14 @@ img[alt~="center"] {
 
 ---
 
+<!-- paginate: true -->
+
+## Recordatorio...
+
+![width:800 center](img/kubernetes-cluster-architecture.svg)
+
+---
+
 ## ¿Qué es Terraform?
 
 - Herramienta **IaC** (Infraestructura como Código) declarativa.
@@ -75,23 +83,6 @@ terraform -version
 - **CI/CD**: misma herramienta y formato para crear y actualizar todos los recursos.
 
 https://developer.hashicorp.com/terraform/tutorials/kubernetes/kubernetes-provider?variants=kubernetes%3Akind
-
----
-
-## Estructura del proyecto (sugerida)
-
-```
-k8s-terraform/
-├── main.tf            # provider y ajustes comunes
-├── nginx.tf           # ejemplo NGINX base
-├── nginx-vars.tf      # NGINX con variables
-├── mariadb.tf         # Deployment + Service
-├── wordpress.tf       # Deployment + Service
-├── storage.tf         # PVCs (dinámicos con StorageClass)
-└── outputs.tf         # (opcional) valores de salida
-```
-
-> Terraform **lee todos los `.tf`** del directorio y compone un único plan.
 
 ---
 
